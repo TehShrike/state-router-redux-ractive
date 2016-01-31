@@ -1,0 +1,27 @@
+{
+  "name": "state-router-redux-ractive",
+  "version": "1.0.0",
+  "description": "If you use abstract-state-router and want to use Redux, this package is for you",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TehShrike/state-router-redux-ractive.git"
+  },
+  "keywords": [
+    "abstract-state-router",
+    "router",
+    "redux",
+    "ractive",
+    "ractivejs",
+    "browserify"
+  ],
+  "author": "TehShrike",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/TehShrike/state-router-redux-ractive/issues"
+  },
+  "homepage": "https://github.com/TehShrike/state-router-redux-ractive#readme"
+}
