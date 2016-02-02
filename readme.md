@@ -63,6 +63,8 @@ stateRouter.addState({
 }
 ```
 
+To see a "real-life" example, check out this [demo state in the state-router-example](https://github.com/TehShrike/state-router-example/blob/gh-pages/implementations/ractive-redux/app/topics/tasks/tasks.js).
+
 The properties of `data` that are used:
 
 - `initialState`: whatever you want Redux to be initialized with.  Any properties returned by the `resolve` function will be applied to the initial state, overwriting any duplicate properties.
