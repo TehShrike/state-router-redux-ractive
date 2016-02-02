@@ -39,6 +39,7 @@
     "redux": "^3.2.0"
   },
   "jsnext:main": "index.js",
+  "browser": "index.js",
   "browserify": {
     "transform": [
       [
