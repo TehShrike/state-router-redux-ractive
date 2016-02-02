@@ -5,7 +5,7 @@
   "main": "es5.js",
   "scripts": {
     "test": "npm run build && node test.js",
-    "build": "browserify index.js -t [ babelify --presets [ es2015 ] ] --standalone=\"state-router-redux-ractive\" -o es5.js"
+    "build": "browserify . --standalone=\"state-router-redux-ractive\" -o es5.js"
   },
   "repository": {
     "type": "git",
