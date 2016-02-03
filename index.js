@@ -30,7 +30,6 @@ module.exports = function(stateRouter, middlewares = []) {
 				store.dispatch({ type: actionType, payload: value(node) })
 			})
 
-			ractive.store = store
 			domApis[routerState.name] = ractive
 			unsubscribes[routerState.name] = store.subscribe(() => ractive.set(store.getState()))
 
