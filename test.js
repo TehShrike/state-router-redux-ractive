@@ -4,7 +4,7 @@ var stateFactory = require('abstract-state-router/test/helpers/test-state-factor
 var EventEmitter = require('events').EventEmitter
 
 
-function factoryFactory(emitter) {
+function createMockRendererFactory(emitter) {
 	emitter.set = function(newState) {
 		emitter.state = newState
 	}
@@ -28,15 +28,15 @@ function factoryFactory(emitter) {
 
 test('works like I\'d expect', function(t) {
 	var emitter = new EventEmitter()
-	var mockFactory = factoryFactory(emitter)
+	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
-	t.plan(6)
+	t.plan(8)
 	t.timeoutAfter(500)
 
 	var reducerCalled = false
 
-	testState.stateRouter.addState({
+	const blurghState = {
 		name: 'blurgh',
 		route: 'blurgh',
 		template: '',
@@ -45,8 +45,10 @@ test('works like I\'d expect', function(t) {
 				value: 'totally legit'
 			},
 			reducer: function(state, action) {
-				if (action.type !== '@@redux/INIT') {
-					t.equal(state.initialState, true)
+				if (action.type === '@@redux/INIT') {
+					t.equal(state.value, 'totally legit')
+					return state
+				} else {
 					t.equal(action.type, 'WAT')
 					t.equal(action.thingy, 13)
 					reducerCalled = true
@@ -54,15 +56,13 @@ test('works like I\'d expect', function(t) {
 						newState: true
 					}
 				}
-
-				return {
-					initialState: true
-				}
 			},
 			afterAction: function(args) {
 				t.ok(reducerCalled)
 				t.equal(args.action.type, 'WAT')
 				t.equal(args.state.newState, true)
+				t.equal(args.activeStateContext.state, blurghState)
+				t.ok(args.activeStateContext.domApi)
 				t.end()
 			}
 		},
@@ -71,7 +71,9 @@ test('works like I\'d expect', function(t) {
 				thingy: 13
 			})
 		}
-	})
+	}
+
+	testState.stateRouter.addState(blurghState)
 
 	setUpReduxForStateRouter(testState.stateRouter)
 
@@ -82,7 +84,7 @@ test('middlewares', function(t) {
 	// function causeDomEffects({ getState, dispatch })
 
 	var emitter = new EventEmitter()
-	var mockFactory = factoryFactory(emitter)
+	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
 	t.plan(5)

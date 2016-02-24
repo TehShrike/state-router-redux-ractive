@@ -6,16 +6,18 @@ module.exports = function(stateRouter, middlewares = []) {
 	var unsubscribes = {}
 	var domApis = {}
 
-	function attachToState(routerState, ractive, initialState) {
+	function attachToState(stateContext) {
+		var { state: routerState, domApi: ractive, content: initialState } = stateContext
+
 		if (routerState.data && routerState.data.reducer) {
-			var causeDomEffects
+			var stateMiddlewares = middlewares.slice()
 			if (routerState.data.afterAction) {
-				causeDomEffects = makeChangeListener(routerState, ractive)
+				stateMiddlewares.unshift(makeChangeListener(stateContext, ractive))
 			}
 
 			var store = redux.createStore(routerState.data.reducer,
 					extend(initialState, routerState.data.initialState),
-					redux.applyMiddleware(causeDomEffects, ...middlewares))
+					redux.applyMiddleware(...stateMiddlewares))
 
 			ractive.on('dispatch', (actionType, payload) => {
 				var action = {}
@@ -44,24 +46,25 @@ module.exports = function(stateRouter, middlewares = []) {
 			delete domApis[stateName]
 		}
 	}
-	stateRouter.on('afterCreateState', context => attachToState(context.state, context.domApi, context.content))
+	stateRouter.on('afterCreateState', context => attachToState(context))
 
 	stateRouter.on('beforeResetState', context => detatchFromState(context.state.name))
-	stateRouter.on('afterResetState', context => attachToState(context.state, context.domApi, context.content))
+	stateRouter.on('afterResetState', context => attachToState(context))
 
 	stateRouter.on('beforeDestroyState', context => detatchFromState(context.state.name))
 }
 
-function makeChangeListener(routerState, ractive) {
+function makeChangeListener(stateContext, ractive) {
 	return function causeDomEffects({ getState, dispatch }) {
 		return next => action => {
 			var finalAction = next(action)
 
-			routerState.data.afterAction({
+			stateContext.state.data.afterAction({
 				state: getState(),
 				dispatch,
 				domApi: ractive,
-				action
+				action,
+				activeStateContext: stateContext
 			})
 
 			return finalAction
