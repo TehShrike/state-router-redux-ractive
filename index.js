@@ -1,10 +1,12 @@
 var value = require('dom-value')
 var extend = require('xtend')
 var redux = require('redux')
+var diff = require('ractive-diff-generator')
 
 module.exports = function(stateRouter, middlewares = []) {
 	var unsubscribes = {}
 	var domApis = {}
+	var lastStates = {}
 
 	function attachToState(stateContext) {
 		var { state: routerState, domApi: ractive, content: initialState } = stateContext
@@ -15,8 +17,10 @@ module.exports = function(stateRouter, middlewares = []) {
 				stateMiddlewares.unshift(makeChangeListener(stateContext, ractive))
 			}
 
+			var initialStateInStore = extend(initialState, routerState.data.initialState)
+			lastStates[routerState.name] = initialStateInStore
 			var store = redux.createStore(routerState.data.reducer,
-					extend(initialState, routerState.data.initialState),
+					initialStateInStore,
 					redux.applyMiddleware(...stateMiddlewares))
 
 			ractive.on('dispatch', (actionType, payload) => {
@@ -32,8 +36,17 @@ module.exports = function(stateRouter, middlewares = []) {
 				store.dispatch({ type: actionType, payload: value(node) })
 			})
 
+
 			domApis[routerState.name] = ractive
-			unsubscribes[routerState.name] = store.subscribe(() => ractive.set(store.getState()))
+			unsubscribes[routerState.name] = store.subscribe(() => {
+				var newState = store.getState()
+				var last = lastStates[routerState.name]
+				lastStates[routerState.name] = newState
+
+				var smartSet = last ? diff(last, newState) : newState
+				console.log('smart set', smartSet)
+				ractive.set(smartSet)
+			})
 
 		}
 	}
@@ -44,6 +57,7 @@ module.exports = function(stateRouter, middlewares = []) {
 
 			delete domApis[stateName].store
 			delete domApis[stateName]
+			delete lastStates[stateName]
 		}
 	}
 	stateRouter.on('afterCreateState', context => attachToState(context))

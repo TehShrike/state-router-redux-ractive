@@ -27,6 +27,7 @@
   "homepage": "https://github.com/TehShrike/state-router-redux-ractive#readme",
   "dependencies": {
     "dom-value": "~1.0.0",
+    "ractive-diff-generator": "1.0.0",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
