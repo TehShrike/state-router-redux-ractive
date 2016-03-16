@@ -44,7 +44,6 @@ module.exports = function(stateRouter, middlewares = []) {
 				lastStates[routerState.name] = newState
 
 				var smartSet = last ? diff(last, newState) : newState
-				console.log('smart set', smartSet)
 				ractive.set(smartSet)
 			})
 
