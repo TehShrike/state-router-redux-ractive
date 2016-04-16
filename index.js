@@ -68,9 +68,13 @@ module.exports = function(stateRouter, middlewares = []) {
 }
 
 function makeChangeListener(stateContext, ractive) {
-	return function causeDomEffects({ getState, dispatch }) {
+	return function causeDomEffects({ getState }) {
 		return next => action => {
 			var finalAction = next(action)
+
+			function dispatch(action) {
+				ractive.fire('dispatch', action.type, action)
+			}
 
 			stateContext.state.data.afterAction({
 				state: getState(),

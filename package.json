@@ -5,6 +5,7 @@
   "main": "es5.js",
   "scripts": {
     "test": "npm run build && node test.js",
+    "browsertest": "browserify test.js -d | tape-run",
     "build": "browserify . --standalone=\"state-router-redux-ractive\" -o es5.js"
   },
   "repository": {
@@ -38,6 +39,7 @@
     "redux": "^3.2.0",
     "tape": "4.4.0",
     "tape-catch": "1.0.4",
+    "tape-run": "2.1.3",
     "watchify": "3.7.0"
   },
   "jsnext:main": "index.js",
