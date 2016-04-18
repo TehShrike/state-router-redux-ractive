@@ -1,6 +1,6 @@
 {
   "name": "state-router-redux-ractive",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "If you use abstract-state-router and want to use Redux, this package is for you",
   "main": "es5.js",
   "scripts": {
