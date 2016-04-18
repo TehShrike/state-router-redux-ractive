@@ -2,11 +2,20 @@ var test = require('tape-catch')
 var setUpReduxForStateRouter = require('.')
 var stateFactory = require('abstract-state-router/test/helpers/test-state-factory')
 var EventEmitter = require('events').EventEmitter
-
+var Ractive = require('ractive')
+Ractive.DEBUG = false
 
 function createMockRendererFactory(emitter) {
+	var r = new Ractive({})
 	emitter.set = function(newState) {
-		emitter.state = newState
+		r.set(newState)
+		emitter.state = r.get()
+		emitter.emit('set', newState)
+	}
+	emitter.merge = function(keypath, value) {
+		r.merge(keypath, value)
+		emitter.state = r.get()
+		emitter.emit('merge', keypath, value)
 	}
 	emitter.fire = emitter.emit
 	return function makeRenderer(stateRouter) {
@@ -32,7 +41,7 @@ test('works like I\'d expect', function(t) {
 	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
-	t.plan(8)
+	t.plan(7)
 	t.timeoutAfter(500)
 
 	var reducerCalled = false
@@ -46,17 +55,15 @@ test('works like I\'d expect', function(t) {
 				value: 'totally legit'
 			},
 			reducer: function(state, action) {
-				if (action.type === '@@redux/INIT') {
-					t.equal(state.value, 'totally legit')
-					return state
-				} else {
-					t.equal(action.type, 'WAT')
+				if (action.type === 'WAT') {
 					t.equal(action.thingy, 13)
 					reducerCalled = true
 					return {
 						newState: true
 					}
 				}
+
+				return state
 			},
 			afterAction: function(args) {
 				t.ok(reducerCalled)
@@ -68,6 +75,9 @@ test('works like I\'d expect', function(t) {
 			}
 		},
 		activate: function() {
+			emitter.once('set', function(state) {
+				t.equal(state.newState, true)
+			})
 			emitter.emit('dispatch', 'WAT', {
 				thingy: 13
 			})
@@ -139,6 +149,101 @@ test('dispatching from afterAction emits "dispatch" on the domApi', function(t) 
 	}
 
 	testState.stateRouter.addState(blurghState)
+
+	setUpReduxForStateRouter(testState.stateRouter)
+
+	testState.stateRouter.go('blurgh')
+})
+
+test('diffs of arrays and properties are done smartly', function(t) {
+	var emitter = new EventEmitter()
+	var mockFactory = createMockRendererFactory(emitter)
+	var testState = stateFactory(t, mockFactory, { throwOnError: true })
+
+	// t.plan(5)
+	t.timeoutAfter(500)
+	var merged = false
+
+	testState.stateRouter.addState({
+		name: 'blurgh',
+		route: 'blurgh',
+		template: '',
+		data: {
+			initialState: {
+				objectOne: {
+					a: 'A',
+					b: 'B'
+				},
+				objectTwo: {
+					c: 'C',
+					d: 'D'
+				},
+				array: [ 1, 2, 3 ]
+			},
+			reducer: function(state, action) {
+				if (action.type === 'OBJECT_ONE') {
+					return {
+						objectOne: action.payload,
+						objectTwo: state.objectTwo,
+						array: state.array
+					}
+				} else if (action.type === 'OBJECT_TWO') {
+					return {
+						objectOne: state.objectOne,
+						objectTwo: action.payload,
+						array: state.array
+					}
+
+				} else if (action.type === 'ARRAY') {
+					return {
+						objectOne: state.objectOne,
+						objectTwo: state.objectTwo,
+						array: action.payload
+					}
+				}
+
+				return state
+			},
+			afterAction: function(args) {
+				if (args.action.type === 'OBJECT_ONE') {
+					emitter.once('set', function(sentToRactive) {
+						t.deepEqual(sentToRactive, {
+							'objectTwo.c': 'second version',
+							'objectTwo.d': null
+						})
+					})
+					emitter.emit('dispatch', 'OBJECT_TWO', {
+						payload: {
+							c: 'second version'
+						}
+					})
+				} else if (args.action.type === 'OBJECT_TWO') {
+					emitter.once('merge', function(keypath, sentToRactive) {
+						merged = true
+						t.equal(keypath, 'array')
+						t.deepEqual(sentToRactive, [6, 7])
+					})
+					emitter.emit('dispatch', 'ARRAY', {
+						payload: [6, 7]
+					})
+				} else if (args.action.type === 'ARRAY') {
+					t.ok(merged)
+					t.end()
+				}
+			}
+		},
+		activate: function() {
+			emitter.once('set', function(sentToRactive) {
+				t.deepEqual(sentToRactive, { 'objectOne.a': 'second version' })
+			})
+			emitter.emit('dispatch', 'OBJECT_ONE', {
+				payload: {
+					a: 'second version',
+					b: 'B'
+				}
+			})
+		}
+	})
 
 	setUpReduxForStateRouter(testState.stateRouter)
 

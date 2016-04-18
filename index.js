@@ -3,6 +3,12 @@ var extend = require('xtend')
 var redux = require('redux')
 var diff = require('ractive-diff-generator')
 
+const mergeOptions = {
+	compare: function identity(o) {
+		return o
+	}
+}
+
 module.exports = function(stateRouter, middlewares = []) {
 	var unsubscribes = {}
 	var domApis = {}
@@ -43,8 +49,16 @@ module.exports = function(stateRouter, middlewares = []) {
 				var last = lastStates[routerState.name]
 				lastStates[routerState.name] = newState
 
-				var smartSet = last ? diff(last, newState) : newState
-				ractive.set(smartSet)
+				if (last) {
+					var smartSet = diff(last, newState)
+					ractive.set(smartSet.set)
+					smartSet.merge.forEach(function(arrayToMerge) {
+					    ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
+					})
+				} else {
+					ractive.set(newState)
+				}
+
 			})
 
 		}
