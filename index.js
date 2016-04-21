@@ -49,16 +49,8 @@ module.exports = function(stateRouter, middlewares = []) {
 				var last = lastStates[routerState.name]
 				lastStates[routerState.name] = newState
 
-				if (last) {
-					var smartSet = diff(last, newState)
-					ractive.set(smartSet.set)
-					smartSet.merge.forEach(function(arrayToMerge) {
-					    ractive.merge(arrayToMerge.keypath, arrayToMerge.array, mergeOptions)
-					})
-				} else {
-					ractive.set(newState)
-				}
-
+				var smartSet = diff(last || {}, newState)
+				diff.apply(ractive, smartSet)
 			})
 
 		}
