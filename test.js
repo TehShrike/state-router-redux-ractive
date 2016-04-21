@@ -1,23 +1,23 @@
 var test = require('tape-catch')
 var setUpReduxForStateRouter = require('.')
 var stateFactory = require('abstract-state-router/test/helpers/test-state-factory')
-var EventEmitter = require('events').EventEmitter
 var Ractive = require('ractive')
 Ractive.DEBUG = false
 
 function createMockRendererFactory(emitter) {
-	var r = new Ractive({})
+	emitter.originalMerge = emitter.merge
+	emitter.originalSet = emitter.set
 	emitter.set = function(newState) {
-		r.set(newState)
-		emitter.state = r.get()
-		emitter.emit('set', newState)
+		emitter.originalSet(newState)
+		emitter.state = emitter.get()
+		emitter.fire('set', newState)
 	}
 	emitter.merge = function(keypath, value) {
-		r.merge(keypath, value)
-		emitter.state = r.get()
-		emitter.emit('merge', keypath, value)
+		emitter.originalMerge(keypath, value)
+		emitter.state = emitter.get()
+		emitter.fire('merge', keypath, value)
 	}
-	emitter.fire = emitter.emit
+
 	return function makeRenderer(stateRouter) {
 		return {
 			render: function render(context, cb) {
@@ -37,7 +37,7 @@ function createMockRendererFactory(emitter) {
 }
 
 test('works like I\'d expect', function(t) {
-	var emitter = new EventEmitter()
+	var emitter = new Ractive()
 	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
@@ -78,7 +78,7 @@ test('works like I\'d expect', function(t) {
 			emitter.once('set', function(state) {
 				t.equal(state.newState, true)
 			})
-			emitter.emit('dispatch', 'WAT', {
+			emitter.fire('dispatch', 'WAT', {
 				thingy: 13
 			})
 		}
@@ -92,7 +92,7 @@ test('works like I\'d expect', function(t) {
 })
 
 test('dispatching from afterAction emits "dispatch" on the domApi', function(t) {
-	var emitter = new EventEmitter()
+	var emitter = new Ractive()
 
 	var rewateningReduced = false
 	var actionDispatched = false
@@ -142,7 +142,7 @@ test('dispatching from afterAction emits "dispatch" on the domApi', function(t) 
 			}
 		},
 		activate: function() {
-			emitter.emit('dispatch', 'WAT', {
+			emitter.fire('dispatch', 'WAT', {
 				thingy: 13
 			})
 		}
@@ -156,7 +156,7 @@ test('dispatching from afterAction emits "dispatch" on the domApi', function(t) 
 })
 
 test('diffs of arrays and properties are done smartly', function(t) {
-	var emitter = new EventEmitter()
+	var emitter = new Ractive()
 	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
@@ -212,7 +212,7 @@ test('diffs of arrays and properties are done smartly', function(t) {
 							'objectTwo.d': null
 						})
 					})
-					emitter.emit('dispatch', 'OBJECT_TWO', {
+					emitter.fire('dispatch', 'OBJECT_TWO', {
 						payload: {
 							c: 'second version'
 						}
@@ -223,7 +223,7 @@ test('diffs of arrays and properties are done smartly', function(t) {
 						t.equal(keypath, 'array')
 						t.deepEqual(sentToRactive, [6, 7])
 					})
-					emitter.emit('dispatch', 'ARRAY', {
+					emitter.fire('dispatch', 'ARRAY', {
 						payload: [6, 7]
 					})
 				} else if (args.action.type === 'ARRAY') {
@@ -236,7 +236,7 @@ test('diffs of arrays and properties are done smartly', function(t) {
 			emitter.once('set', function(sentToRactive) {
 				t.deepEqual(sentToRactive, { 'objectOne.a': 'second version' })
 			})
-			emitter.emit('dispatch', 'OBJECT_ONE', {
+			emitter.fire('dispatch', 'OBJECT_ONE', {
 				payload: {
 					a: 'second version',
 					b: 'B'
@@ -251,7 +251,7 @@ test('diffs of arrays and properties are done smartly', function(t) {
 })
 
 test('middlewares', function(t) {
-	var emitter = new EventEmitter()
+	var emitter = new Ractive()
 	var mockFactory = createMockRendererFactory(emitter)
 	var testState = stateFactory(t, mockFactory, { throwOnError: true })
 
@@ -282,7 +282,7 @@ test('middlewares', function(t) {
 			}
 		},
 		activate: function() {
-			emitter.emit('dispatch', 'WAT', {
+			emitter.fire('dispatch', 'WAT', {
 				thingy: 13
 			})
 		}
