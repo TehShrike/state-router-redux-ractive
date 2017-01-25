@@ -40,7 +40,7 @@ stateRouter.addState({
 	route: '/topics',
 	template: {
 		template: require('fs').readFileSync('implementations/ractive-redux/app/topics/topics.html', { encoding: 'utf8' }),
-		toway: false
+		twoway: false
 	},
 	resolve: function(data, parameters, cb) {
 		all({
