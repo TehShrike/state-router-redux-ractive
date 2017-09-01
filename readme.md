@@ -1,4 +1,4 @@
-I made this because I wanted to use [Redux](http://rackt.org/redux/) to drive some of my complicated-document views implemented with the [abstract-state-router](https://github.com/TehShrike/abstract-state-router).
+I made this because I wanted to use [Redux](http://redux.js.org/) to drive some of my complicated-document views implemented with the [abstract-state-router](https://github.com/TehShrike/abstract-state-router).
 
 # Using it in theory
 
