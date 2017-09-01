@@ -68,7 +68,7 @@ To see a "real-life" example, check out this [demo state in the state-router-exa
 The properties of `data` that are used:
 
 - `initialState`: whatever you want Redux to be initialized with.  Any properties returned by the `resolve` function will be applied to the initial state, overwriting any duplicate properties.
-- `reducer`: any regular [Redux reducer function](http://rackt.org/redux/docs/basics/Reducers.html).  Will be passed straight to Redux.
+- `reducer`: any regular [Redux reducer function](http://redux.js.org/docs/basics/Reducers.html).  Will be passed straight to Redux.
 - `afterAction`: called immediately after the reducers changes are applied to the store (synchronously).  Passed these arguments:
 	- `state` - the store's new value after the reducer call
 	- `dispatch` - the dispatch function of the store
