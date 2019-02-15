@@ -2,11 +2,9 @@
   "name": "state-router-redux-ractive",
   "version": "3.0.1",
   "description": "If you use abstract-state-router and want to use Redux, this package is for you",
-  "main": "es5.js",
+  "main": "index.js",
   "scripts": {
-    "test": "npm run build && node test.js",
-    "browsertest": "browserify test.js -d | tape-run",
-    "build": "browserify . --standalone=\"state-router-redux-ractive\" -o es5.js"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
@@ -17,8 +15,7 @@
     "router",
     "redux",
     "ractive",
-    "ractivejs",
-    "browserify"
+    "ractivejs"
   ],
   "author": "TehShrike",
   "license": "WTFPL",
@@ -33,26 +30,11 @@
   },
   "devDependencies": {
     "abstract-state-router": "5.9.0",
-    "babel-preset-es2015": "6.3.13",
-    "babelify": "7.2.0",
-    "browserify": "13.0.0",
     "ractive": "0.7.3",
     "redux": "^3.2.0",
     "tape": "4.4.0",
     "tape-catch": "1.0.4",
-    "tape-run": "2.1.3",
-    "watchify": "3.7.0"
+    "tape-run": "2.1.3"
   },
-  "jsnext:main": "index.js",
-  "browser": "index.js",
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": "es2015"
-        }
-      ]
-    ]
-  }
+  "browser": "index.js"
 }
